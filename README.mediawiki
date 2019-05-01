@@ -2,8 +2,8 @@
 
 This mod introduces some new concepts for the ball mod, which are described below.
 
-;Shotgun
-: This is the ball. You can catch the ball. If you have a ball, you can't use any other weapon. The shotgun ammo reflects the time in seconds you can keep the ball before automatic shooting.
+;Grenade
+: This is the ball (or Shotgun and Laser, depending on the variable '''sv_balltype'''). You can catch the ball. If you have a ball, you can't use any other weapon. The shotgun ammo reflects the time in seconds you can keep the ball before automatic shooting.
 ;Ninja
 : This weapon is new for the ball mod. It replaces the old '/goalkeeper' chat command and provides a faster way to get a goalkeeper. On special maps, multiple goalkeepers are possible now.
 ;Goalkeeper
