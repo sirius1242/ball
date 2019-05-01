@@ -93,6 +93,9 @@ MACRO_CONFIG_INT(SvArmorKeep, sv_ball_armor_keep, 25, 0, 1000000, CFGFLAG_SERVER
 MACRO_CONFIG_INT(SvBallLifetime, sv_ball_lifetime, 90, 0, 1000000, CFGFLAG_SERVER, "Ball lifetime in seconds")
 MACRO_CONFIG_INT(SvPhysicalStartVel, sv_physical_start_vel, 0, 0, 100, CFGFLAG_SERVER, "How much influence does the tee velocity have to the projectile velocity. 100 = physically correct. 0 = no influence, default of vanilla teeworlds.")
 
+MACRO_CONFIG_INT(SvBallType, sv_balltype, 3, 0, 10, CFGFLAG_SERVER, "Ball Type (default grenade)")
+MACRO_CONFIG_INT(SvEnterGoal, sv_entergoal, 0, 0, 1, CFGFLAG_SERVER, "Whether permit player enter goal area or not (default 0)")
+
 // debug
 #ifdef CONF_DEBUG // this one can crash the server if not used correctly
 	MACRO_CONFIG_INT(DbgDummies, dbg_dummies, 0, 0, 15, CFGFLAG_SERVER, "")

@@ -91,9 +91,9 @@ void CCharacter::Destroy()
 
 void CCharacter::SetWeapon(int W)
 {
-	if (m_aWeapons[WEAPON_SHOTGUN].m_Got)
-		W = WEAPON_SHOTGUN;
-	if (W == WEAPON_SHOTGUN && !m_aWeapons[WEAPON_SHOTGUN].m_Got)
+	if (m_aWeapons[g_Config.m_SvBallType].m_Got)
+		W = g_Config.m_SvBallType;
+	if (W == g_Config.m_SvBallType && !m_aWeapons[g_Config.m_SvBallType].m_Got)
 		W = WEAPON_HAMMER;
 
 	if(W == m_ActiveWeapon)
@@ -178,8 +178,8 @@ void CCharacter::HandleNinja()
 				GetBallFromTarget(aEnts[i]);
 				aEnts[i]->TakeDamage(vec2(0, -10.0f), 1, m_pPlayer->GetCID(), WEAPON_NINJA);
 			}
-			if (m_aWeapons[WEAPON_SHOTGUN].m_Got)
-				SetWeapon(WEAPON_SHOTGUN);
+			if (m_aWeapons[g_Config.m_SvBallType].m_Got)
+				SetWeapon(g_Config.m_SvBallType);
 		}
 
 		return;
@@ -201,10 +201,10 @@ void CCharacter::DoWeaponSwitch()
 
 void CCharacter::GetBallFromTarget(CCharacter *pTarget)
 {
-	if (pTarget->m_aWeapons[WEAPON_SHOTGUN].m_Got) {
-		GiveWeapon(WEAPON_SHOTGUN, 1);
-		pTarget->m_aWeapons[WEAPON_SHOTGUN].m_Ammo = 0;
-		pTarget->m_aWeapons[WEAPON_SHOTGUN].m_Got = false;
+	if (pTarget->m_aWeapons[g_Config.m_SvBallType].m_Got) {
+		GiveWeapon(g_Config.m_SvBallType, 1);
+		pTarget->m_aWeapons[g_Config.m_SvBallType].m_Ammo = 0;
+		pTarget->m_aWeapons[g_Config.m_SvBallType].m_Got = false;
 		pTarget->SetWeapon(pTarget->m_LastWeapon);
 	}
 }
@@ -319,7 +319,7 @@ void CCharacter::FireWeapon(bool force)
 				else
 					Dir = vec2(0.f, -1.f);
 
-				if (pTarget->m_aWeapons[WEAPON_SHOTGUN].m_Got) {
+				if (pTarget->m_aWeapons[g_Config.m_SvBallType].m_Got) {
 					GetBallFromTarget(pTarget);
 					pTarget->TakeDamage(vec2(0.f, -1.f) + normalize(Dir + vec2(0.f, -1.1f)) * 10.0f, 0,
 						m_pPlayer->GetCID(), m_ActiveWeapon);
@@ -388,12 +388,10 @@ void CCharacter::FireWeapon(bool force)
 		{
 			Direction.x += g_Config.m_SvPhysicalStartVel / 100.0 * m_Core.m_Vel.x / GameServer()->Tuning()->m_GrenadeSpeed * Server()->TickSpeed();
 			Direction.y += g_Config.m_SvPhysicalStartVel / 100.0 * m_Core.m_Vel.y / GameServer()->Tuning()->m_GrenadeSpeed * Server()->TickSpeed();
-			CProjectile *pProj = new CProjectile(GameWorld(), WEAPON_GRENADE,
+			CBall *pProj = new CBall(GameWorld(),
 				m_pPlayer->GetCID(),
-				ProjStartPos,
-				Direction,
-				(int)(Server()->TickSpeed()*GameServer()->Tuning()->m_GrenadeLifetime),
-				1, true, 0, SOUND_GRENADE_EXPLODE, WEAPON_GRENADE);
+				m_Pos,
+				Direction);
 
 			// pack the Projectile and send it to the client Directly
 			CNetObj_Projectile p;
@@ -406,6 +404,7 @@ void CCharacter::FireWeapon(bool force)
 			Server()->SendMsg(&Msg, 0, m_pPlayer->GetCID());
 
 			GameServer()->CreateSound(m_Pos, SOUND_GRENADE_FIRE);
+			m_Armor = max(0, m_Armor - 1);
 		} break;
 
 		case WEAPON_RIFLE:
@@ -430,17 +429,17 @@ void CCharacter::FireWeapon(bool force)
 
 	m_AttackTick = Server()->Tick();
 
-	if (m_ActiveWeapon == WEAPON_SHOTGUN) {
-		m_aWeapons[WEAPON_SHOTGUN].m_Got = false;
-		m_aWeapons[WEAPON_SHOTGUN].m_Ammo = 0;
-		if (m_LastWeapon != WEAPON_SHOTGUN)
+	if (m_ActiveWeapon == g_Config.m_SvBallType) {
+		m_aWeapons[g_Config.m_SvBallType].m_Got = false;
+		m_aWeapons[g_Config.m_SvBallType].m_Ammo = 0;
+		if (m_LastWeapon != g_Config.m_SvBallType)
 			SetWeapon(m_LastWeapon);
 		else
 			SetWeapon(WEAPON_HAMMER);
 		m_ReloadTimer = Server()->TickSpeed() / 4;
 		return;
 	}
-	if(m_ActiveWeapon != WEAPON_SHOTGUN && m_aWeapons[m_ActiveWeapon].m_Ammo > 0) // -1 == unlimited
+	if(m_ActiveWeapon != g_Config.m_SvBallType && m_aWeapons[m_ActiveWeapon].m_Ammo > 0) // -1 == unlimited
 	{
 		m_aWeapons[m_ActiveWeapon].m_Ammo--;
 	}
@@ -493,10 +492,10 @@ void CCharacter::HandleWeapons()
 
 bool CCharacter::GiveWeapon(int Weapon, int Ammo)
 {
-	if (Weapon == WEAPON_SHOTGUN)
+	if (Weapon == g_Config.m_SvBallType)
 	{
-		m_aWeapons[WEAPON_SHOTGUN].m_Got = true;
-		m_aWeapons[WEAPON_SHOTGUN].m_Ammo = 10;
+		m_aWeapons[g_Config.m_SvBallType].m_Got = true;
+		m_aWeapons[g_Config.m_SvBallType].m_Ammo = 10;
 		m_BallShootTick = Server()->Tick() +  g_Config.m_SvBaseKeep + m_Armor * g_Config.m_SvArmorKeep;
 		return true;
 	}
@@ -586,11 +585,11 @@ void CCharacter::Tick()
 			m_HealthRegenTick = -1;
 	}
 
-	if (m_aWeapons[WEAPON_SHOTGUN].m_Got) {
+	if (m_aWeapons[g_Config.m_SvBallType].m_Got) {
 		if (Server()->Tick() == m_BallShootTick) {
 			FireWeapon(true);
 		} else {
-			m_aWeapons[WEAPON_SHOTGUN].m_Ammo = min((m_BallShootTick - Server()->Tick()) / Server()->TickSpeed() + 1, 10);
+			m_aWeapons[g_Config.m_SvBallType].m_Ammo = min((m_BallShootTick - Server()->Tick()) / Server()->TickSpeed() + 1, 10);
 		}
 	}
 
@@ -620,15 +619,16 @@ void CCharacter::Tick()
 			{m_ProximityRadius/2.f, -m_ProximityRadius/2.f}};
 		for (int i = 4; i--; ) {
 			int coll = GameServer()->Collision()->GetCollisionAt(m_Pos.x + check_pos[i][0], m_Pos.y + check_pos[i][1]);
-			if (coll & CCollision::COLFLAG_DEATH
+			if (coll & CCollision::COLFLAG_DEATH 
+					|| ( !g_Config.m_SvEnterGoal && (coll & CCollision::SFLAG_GOAL_TEAM_0 || coll & CCollision::SFLAG_GOAL_TEAM_1 ))
 					|| (CCollision::MaskSCollision(coll) == CCollision::SFLAG_LIMIT_TEAM_0 && m_pPlayer->GetTeam() == 0)
 					|| (CCollision::MaskSCollision(coll) == CCollision::SFLAG_LIMIT_TEAM_1 && m_pPlayer->GetTeam() == 1)
 					|| (CCollision::MaskSCollision(coll) == CCollision::SFLAG_LIMIT_NON_GOALIES && !m_aWeapons[WEAPON_NINJA].m_Got)) {
-				if (m_aWeapons[WEAPON_SHOTGUN].m_Ammo) {
+				if (m_aWeapons[g_Config.m_SvBallType].m_Ammo) {
 					coll = CCollision::MaskSCollision(coll);
 					if (coll == CCollision::SFLAG_GOAL_TEAM_0 || coll == CCollision::SFLAG_GOAL_TEAM_1) {
-						m_aWeapons[WEAPON_SHOTGUN].m_Ammo = 0;
-						m_aWeapons[WEAPON_SHOTGUN].m_Got = false;
+						m_aWeapons[g_Config.m_SvBallType].m_Ammo = 0;
+						m_aWeapons[g_Config.m_SvBallType].m_Got = false;
 						if (coll == CCollision::SFLAG_GOAL_TEAM_1)
 							GameServer()->m_pController->Goal(m_pPlayer, 0, m_pPlayer->GetTeam(), 1);
 						else

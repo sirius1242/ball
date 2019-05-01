@@ -43,8 +43,23 @@ vec2 CBall::GetPos(float Time)
 	float Curvature = 0;
 	float Speed = 0;
 
-	Curvature = GameServer()->Tuning()->m_ShotgunCurvature;
-	Speed = GameServer()->Tuning()->m_ShotgunSpeed;
+	switch(g_Config.m_SvBallType)
+	{
+		case WEAPON_GRENADE:
+			Curvature = GameServer()->Tuning()->m_GrenadeCurvature;
+			Speed = GameServer()->Tuning()->m_GrenadeSpeed;
+			break;
+
+		case WEAPON_SHOTGUN:
+			Curvature = GameServer()->Tuning()->m_ShotgunCurvature;
+			Speed = GameServer()->Tuning()->m_ShotgunSpeed;
+			break;
+
+		case WEAPON_GUN:
+			Curvature = GameServer()->Tuning()->m_GunCurvature;
+			Speed = GameServer()->Tuning()->m_GunSpeed;
+			break;
+	}
 
 	return CalcPos(m_Pos, m_Direction, Curvature, Speed, Time);
 }
@@ -77,8 +92,8 @@ void CBall::Tick()
 	if (TargetChr
 			&& ((TargetChr == OwnerChar && Server()->Tick() - m_LastOwnerInterTick > 2)
 			|| TargetChr != OwnerChar)) {
-		TargetChr->GiveWeapon(WEAPON_SHOTGUN, 1);
-		TargetChr->SetWeapon(WEAPON_SHOTGUN);
+		TargetChr->GiveWeapon(g_Config.m_SvBallType, 1);
+		TargetChr->SetWeapon(g_Config.m_SvBallType);
 		if (TargetChr->GetPlayer()->GetCID() != m_Player)
 			GameServer()->m_pController->m_LastBallPlayer = m_Player;
 		GameServer()->m_World.DestroyEntity(this);
@@ -148,7 +163,7 @@ void CBall::FillInfo(CNetObj_Projectile *pProj)
 	pProj->m_VelX = (int)(m_Direction.x*100.0f);
 	pProj->m_VelY = (int)(m_Direction.y*100.0f);
 	pProj->m_StartTick = m_StartTick;
-	pProj->m_Type = WEAPON_SHOTGUN;
+	pProj->m_Type = g_Config.m_SvBallType;
 }
 
 void CBall::Snap(int SnappingClient)

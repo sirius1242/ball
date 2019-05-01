@@ -38,7 +38,7 @@ void CPickup::Tick()
 			m_Goalkeeper = -1;
 		}
 	}
-	if (m_Type == POWERUP_WEAPON && m_Subtype == WEAPON_SHOTGUN) {
+	if (m_Type == POWERUP_WEAPON && m_Subtype == g_Config.m_SvBallType) {
 		if (g_Config.m_SvMultiBall) {
 			switch (GameServer()->m_pController->ball_game_state) {
 			case IGameController::BALL_GAME_RESPAWN:
@@ -112,9 +112,9 @@ void CPickup::Tick()
 				if(m_Subtype >= 0 && m_Subtype < NUM_WEAPONS)
 				{
 					bool ret;
-					if (m_Subtype == WEAPON_SHOTGUN) {
-						ret = pChr->GiveWeapon(WEAPON_SHOTGUN, 1);
-						pChr->SetWeapon(WEAPON_SHOTGUN);
+					if (m_Subtype == g_Config.m_SvBallType) {
+						ret = pChr->GiveWeapon(g_Config.m_SvBallType, 1);
+						pChr->SetWeapon(g_Config.m_SvBallType);
 						GameServer()->m_pController->ball_game_state = IGameController::BALL_GAME_RUNNING;
 						if (g_Config.m_SvMultiBall) {
 							RespawnTime = g_pData->m_aPickups[m_Type].m_Respawntime;

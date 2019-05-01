@@ -17,7 +17,7 @@ CGameControllerBALL::CGameControllerBALL(class CGameContext *pGameServer) : IGam
 // event
 int CGameControllerBALL::OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon)
 {
-	while (pVictim->m_aWeapons[WEAPON_SHOTGUN].m_Ammo) {
+	while (pVictim->m_aWeapons[g_Config.m_SvBallType].m_Ammo) {
 		pVictim->FireWeapon(true);
 	}
 
