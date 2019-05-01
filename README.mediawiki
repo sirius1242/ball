@@ -81,6 +81,17 @@ To avoid a disappearing ball on client side, you should set the shotgun_lifetime
 |100
 |0-100
 |How much influence does the tee velocity have on the projectile velocity. 100 = physically correct. 0 = no influence (vanilla teeworlds).
+|-
+|sv_balltype
+|3
+|2-4
+|Ball Type (default 3:grenade; others, 2:shotgun; 4:laser)
+|-
+|sv_entergoal
+|0
+|0-1
+|Whether permit player enter goal area or not (default 0), and you may need change this variable when changing maps. for example, when you use volleyball, you must set this variable to 1
+|}
 
 == Ball map development ==
 
