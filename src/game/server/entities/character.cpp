@@ -249,7 +249,7 @@ void CCharacter::HandleWeaponSwitch()
 
 	DoWeaponSwitch();
 }
-
+ 
 void CCharacter::FireWeapon(bool force)
 {
 	if (!force && m_Health == 0)
@@ -365,52 +365,115 @@ void CCharacter::FireWeapon(bool force)
 		{
 			Direction.x += g_Config.m_SvPhysicalStartVel / 100.0 * m_Core.m_Vel.x / GameServer()->Tuning()->m_ShotgunSpeed * Server()->TickSpeed();
 			Direction.y += g_Config.m_SvPhysicalStartVel / 100.0 * m_Core.m_Vel.y / GameServer()->Tuning()->m_ShotgunSpeed * Server()->TickSpeed();
-			CBall *pProj = new CBall(GameWorld(),
-				m_pPlayer->GetCID(),
-				m_Pos,
-				Direction);
+			if (g_Config.m_SvBallType == WEAPON_SHOTGUN)
+			{
+				CBall *pProj = new CBall(GameWorld(),
+					m_pPlayer->GetCID(),
+					m_Pos,
+					Direction);
+				CMsgPacker Msg(NETMSGTYPE_SV_EXTRAPROJECTILE);
+				Msg.AddInt(1);
+				CNetObj_Projectile p;
+				pProj->FillInfo(&p);
 
-			CMsgPacker Msg(NETMSGTYPE_SV_EXTRAPROJECTILE);
-			Msg.AddInt(1);
-			// pack the Projectile and send it to the client Directly
-			CNetObj_Projectile p;
-			pProj->FillInfo(&p);
+				for(unsigned i = 0; i < sizeof(CNetObj_Projectile)/sizeof(int); i++)
+					Msg.AddInt(((int *)&p)[i]);
+				Server()->SendMsg(&Msg, 0, m_pPlayer->GetCID());
 
-			for(unsigned i = 0; i < sizeof(CNetObj_Projectile)/sizeof(int); i++)
-				Msg.AddInt(((int *)&p)[i]);
-			Server()->SendMsg(&Msg, 0, m_pPlayer->GetCID());
+				GameServer()->CreateSound(m_Pos, SOUND_SHOTGUN_FIRE);
+				m_Armor = max(0, m_Armor - 1);
+			}
+			else
+			{
+				CProjectile *pProj = new CProjectile(GameWorld(), WEAPON_SHOTGUN,
+					m_pPlayer->GetCID(),
+					ProjStartPos,
+					Direction,
+					(int)(Server()->TickSpeed()*GameServer()->Tuning()->m_ShotgunLifetime),
+					1, true, 0, SOUND_SHOTGUN_FIRE, WEAPON_SHOTGUN);
+				CMsgPacker Msg(NETMSGTYPE_SV_EXTRAPROJECTILE);
+				Msg.AddInt(1);
+				CNetObj_Projectile p;
+				pProj->FillInfo(&p);
 
-			GameServer()->CreateSound(m_Pos, SOUND_SHOTGUN_FIRE);
-			m_Armor = max(0, m_Armor - 1);
+				for(unsigned i = 0; i < sizeof(CNetObj_Projectile)/sizeof(int); i++)
+					Msg.AddInt(((int *)&p)[i]);
+				Server()->SendMsg(&Msg, 0, m_pPlayer->GetCID());
+
+				GameServer()->CreateSound(m_Pos, SOUND_SHOTGUN_FIRE);
+				m_Armor = max(0, m_Armor - 1);
+			}
 		} break;
 
 		case WEAPON_GRENADE:
 		{
 			Direction.x += g_Config.m_SvPhysicalStartVel / 100.0 * m_Core.m_Vel.x / GameServer()->Tuning()->m_GrenadeSpeed * Server()->TickSpeed();
 			Direction.y += g_Config.m_SvPhysicalStartVel / 100.0 * m_Core.m_Vel.y / GameServer()->Tuning()->m_GrenadeSpeed * Server()->TickSpeed();
-			CBall *pProj = new CBall(GameWorld(),
-				m_pPlayer->GetCID(),
-				m_Pos,
-				Direction);
+			if (g_Config.m_SvBallType == WEAPON_GRENADE)
+			{
+				CBall *pProj = new CBall(GameWorld(),
+					m_pPlayer->GetCID(),
+					m_Pos,
+					Direction);
+				CMsgPacker Msg(NETMSGTYPE_SV_EXTRAPROJECTILE);
+				Msg.AddInt(1);
+				CNetObj_Projectile p;
+				pProj->FillInfo(&p);
 
-			// pack the Projectile and send it to the client Directly
-			CNetObj_Projectile p;
-			pProj->FillInfo(&p);
+				for(unsigned i = 0; i < sizeof(CNetObj_Projectile)/sizeof(int); i++)
+					Msg.AddInt(((int *)&p)[i]);
+				Server()->SendMsg(&Msg, 0, m_pPlayer->GetCID());
 
-			CMsgPacker Msg(NETMSGTYPE_SV_EXTRAPROJECTILE);
-			Msg.AddInt(1);
-			for(unsigned i = 0; i < sizeof(CNetObj_Projectile)/sizeof(int); i++)
-				Msg.AddInt(((int *)&p)[i]);
-			Server()->SendMsg(&Msg, 0, m_pPlayer->GetCID());
+				GameServer()->CreateSound(m_Pos, SOUND_SHOTGUN_FIRE);
+				m_Armor = max(0, m_Armor - 1);
+			}
+			else
+			{
+				CProjectile *pProj = new CProjectile(GameWorld(), WEAPON_GRENADE,
+					m_pPlayer->GetCID(),
+					ProjStartPos,
+					Direction,
+					(int)(Server()->TickSpeed()*GameServer()->Tuning()->m_GrenadeLifetime),
+					1, true, 0, SOUND_GRENADE_EXPLODE, WEAPON_GRENADE);
+				CMsgPacker Msg(NETMSGTYPE_SV_EXTRAPROJECTILE);
+				Msg.AddInt(1);
+				CNetObj_Projectile p;
+				pProj->FillInfo(&p);
 
-			GameServer()->CreateSound(m_Pos, SOUND_GRENADE_FIRE);
-			m_Armor = max(0, m_Armor - 1);
+				for(unsigned i = 0; i < sizeof(CNetObj_Projectile)/sizeof(int); i++)
+					Msg.AddInt(((int *)&p)[i]);
+				Server()->SendMsg(&Msg, 0, m_pPlayer->GetCID());
+
+				GameServer()->CreateSound(m_Pos, SOUND_SHOTGUN_FIRE);
+				m_Armor = max(0, m_Armor - 1);
+			}
 		} break;
 
 		case WEAPON_RIFLE:
 		{
-			new CLaser(GameWorld(), m_Pos, Direction, GameServer()->Tuning()->m_LaserReach, m_pPlayer->GetCID());
-			GameServer()->CreateSound(m_Pos, SOUND_RIFLE_FIRE);
+			if (g_Config.m_SvBallType == WEAPON_SHOTGUN)
+			{
+				CBall *pProj = new CBall(GameWorld(),
+					m_pPlayer->GetCID(),
+					m_Pos,
+					Direction);
+				CMsgPacker Msg(NETMSGTYPE_SV_EXTRAPROJECTILE);
+				Msg.AddInt(1);
+				CNetObj_Projectile p;
+				pProj->FillInfo(&p);
+
+				for(unsigned i = 0; i < sizeof(CNetObj_Projectile)/sizeof(int); i++)
+					Msg.AddInt(((int *)&p)[i]);
+				Server()->SendMsg(&Msg, 0, m_pPlayer->GetCID());
+
+				GameServer()->CreateSound(m_Pos, SOUND_SHOTGUN_FIRE);
+				m_Armor = max(0, m_Armor - 1);
+			}
+			else
+			{
+				new CLaser(GameWorld(), m_Pos, Direction, GameServer()->Tuning()->m_LaserReach, m_pPlayer->GetCID());
+				GameServer()->CreateSound(m_Pos, SOUND_RIFLE_FIRE);
+			}
 		} break;
 
 		case WEAPON_NINJA:
