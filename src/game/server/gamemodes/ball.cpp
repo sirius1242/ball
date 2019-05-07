@@ -36,6 +36,18 @@ void CGameControllerBALL::Tick()
 	}
 }
 
+void CGameControllerBALL::Snap(int SnappingClient)
+{
+	IGameController::Snap(SnappingClient);
+
+	CNetObj_GameData *pGameDataObj = (CNetObj_GameData *)Server()->SnapNewItem(NETOBJTYPE_GAMEDATA, 0, sizeof(CNetObj_GameData));
+	if(!pGameDataObj)
+		return;
+
+	pGameDataObj->m_TeamscoreRed = m_aTeamscore[TEAM_RED];
+	pGameDataObj->m_TeamscoreBlue = m_aTeamscore[TEAM_BLUE];
+}
+
 void CGameControllerBALL::Goal(CPlayer *p, int team_scored, int start_team, int death_goal)
 {
 	CPlayer *pass_p = NULL;
