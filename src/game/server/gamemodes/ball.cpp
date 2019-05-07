@@ -59,7 +59,7 @@ void CGameControllerBALL::Goal(CPlayer *p, int team_scored, int start_team, int 
 		passed = pass_p->GetTeam() == team_scored && pass_p->GetTeam() == p->GetTeam();
 	ball_game_state = BALL_GAME_RESPAWN;
 	char aBuf[512];
-	GameServer()->m_pController->m_aTeamscore[team_scored] += 2 + death_goal + passed;
+	GameServer()->m_pController->m_aTeamscore[team_scored] += 2 + (death_goal | passed);
 	if (p && start_team == p->GetTeam()) {
 		if (team_scored == p->GetTeam())
 			p->m_Score += 2 + death_goal;
