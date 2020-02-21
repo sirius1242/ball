@@ -106,7 +106,6 @@ void CBall::Tick()
 	if (GameLayerClipped(CurPos) || m_RespawnTick < Server()->Tick() || GameServer()->Collision()->GetCollisionAt(PrevPos.x, PrevPos.y) & CCollision::COLFLAG_SOLID) {
 		if (!g_Config.m_SvMultiBall) {
 			GameServer()->m_pController->ball_game_state = IGameController::BALL_GAME_RESPAWN;
-			GameServer()->CreateSoundGlobal(SOUND_CTF_CAPTURE);
 		}
 		GameServer()->m_World.DestroyEntity(this);
 	} else if (Collide) {
@@ -132,7 +131,18 @@ void CBall::Tick()
 			m_Pos = LastPos;
 			vec2 vel;
 			vel.x = m_Direction.x;
-			vel.y = m_Direction.y + 2*GameServer()->Tuning()->m_ShotgunCurvature/10000*Ct*GameServer()->Tuning()->m_ShotgunSpeed;
+			switch (g_Config.m_SvBallType)
+			{
+			case WEAPON_GRENADE:
+				vel.y = m_Direction.y + 2*GameServer()->Tuning()->m_GrenadeCurvature/10000*Ct*GameServer()->Tuning()->m_GrenadeSpeed;
+				break;
+			case WEAPON_SHOTGUN:
+				vel.y = m_Direction.y + 2*GameServer()->Tuning()->m_ShotgunCurvature/10000*Ct*GameServer()->Tuning()->m_ShotgunSpeed;
+				break;
+			default:
+				vel.y = m_Direction.y;
+				break;
+			}
 			if (Collide_x && !Collide_y) {
 				m_Direction.x = -vel.x;
 				m_Direction.y = vel.y;
