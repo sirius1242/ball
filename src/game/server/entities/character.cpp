@@ -424,7 +424,7 @@ void CCharacter::FireWeapon(bool force)
 					Msg.AddInt(((int *)&p)[i]);
 				Server()->SendMsg(&Msg, 0, m_pPlayer->GetCID());
 
-				GameServer()->CreateSound(m_Pos, SOUND_SHOTGUN_FIRE);
+				GameServer()->CreateSound(m_Pos, SOUND_GRENADE_FIRE);
 				m_Armor = max(0, m_Armor - 1);
 			}
 			else
@@ -444,7 +444,7 @@ void CCharacter::FireWeapon(bool force)
 					Msg.AddInt(((int *)&p)[i]);
 				Server()->SendMsg(&Msg, 0, m_pPlayer->GetCID());
 
-				GameServer()->CreateSound(m_Pos, SOUND_SHOTGUN_FIRE);
+				GameServer()->CreateSound(m_Pos, SOUND_GRENADE_FIRE);
 				m_Armor = max(0, m_Armor - 1);
 			}
 		} break;
@@ -466,7 +466,7 @@ void CCharacter::FireWeapon(bool force)
 					Msg.AddInt(((int *)&p)[i]);
 				Server()->SendMsg(&Msg, 0, m_pPlayer->GetCID());
 
-				GameServer()->CreateSound(m_Pos, SOUND_SHOTGUN_FIRE);
+				GameServer()->CreateSound(m_Pos, SOUND_RIFLE_FIRE);
 				m_Armor = max(0, m_Armor - 1);
 			}
 			else
@@ -495,6 +495,8 @@ void CCharacter::FireWeapon(bool force)
 	if (m_ActiveWeapon == g_Config.m_SvBallType) {
 		m_aWeapons[g_Config.m_SvBallType].m_Got = false;
 		m_aWeapons[g_Config.m_SvBallType].m_Ammo = 0;
+		if(g_Config.m_SvArmorClock)
+			IncreaseArmor(-10);
 		if (m_LastWeapon != g_Config.m_SvBallType)
 			SetWeapon(m_LastWeapon);
 		else
@@ -559,7 +561,10 @@ bool CCharacter::GiveWeapon(int Weapon, int Ammo)
 	{
 		m_aWeapons[g_Config.m_SvBallType].m_Got = true;
 		m_aWeapons[g_Config.m_SvBallType].m_Ammo = 10;
-		m_BallShootTick = Server()->Tick() +  g_Config.m_SvBaseKeep + m_Armor * g_Config.m_SvArmorKeep;
+		if(g_Config.m_SvArmorClock)
+			m_BallShootTick = Server()->Tick() +  g_Config.m_SvBaseKeep;
+		else
+			m_BallShootTick = Server()->Tick() +  g_Config.m_SvBaseKeep + m_Armor * g_Config.m_SvArmorKeep;
 		return true;
 	}
 	if(m_aWeapons[Weapon].m_Ammo < g_pData->m_Weapons.m_aId[Weapon].m_Maxammo || !m_aWeapons[Weapon].m_Got)
@@ -653,6 +658,8 @@ void CCharacter::Tick()
 			FireWeapon(true);
 		} else {
 			m_aWeapons[g_Config.m_SvBallType].m_Ammo = min((m_BallShootTick - Server()->Tick()) / Server()->TickSpeed() + 1, 10);
+			if(g_Config.m_SvArmorClock)
+				m_Armor = min((m_BallShootTick - Server()->Tick()) / (Server()->TickSpeed()/10), 10);
 		}
 	}
 
