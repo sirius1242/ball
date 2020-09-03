@@ -90,7 +90,15 @@ int CCollision::GetTile(int x, int y)
 	int Nx = clamp(x/32, 0, m_Width-1);
 	int Ny = clamp(y/32, 0, m_Height-1);
 
-	return m_pTiles[Ny*m_Width+Nx].m_Index > 128 ? 0 : m_pTiles[Ny*m_Width+Nx].m_Index;
+	//return m_pTiles[Ny*m_Width+Nx].m_Index > 128 ? 0 : m_pTiles[Ny*m_Width+Nx].m_Index;
+	if(!m_pTiles || Ny < 0 || Nx < 0 || m_pTiles[Ny*m_Width+Nx].m_Index > 128)
+		return 0;
+
+	if(m_pTiles[Ny*m_Width+Nx].m_Index == COLFLAG_SOLID
+		|| m_pTiles[Ny*m_Width+Nx].m_Index == (COLFLAG_SOLID|COLFLAG_NOHOOK)
+		|| m_pTiles[Ny*m_Width+Nx].m_Index == COLFLAG_DEATH)
+		return m_pTiles[Ny*m_Width+Nx].m_Index;
+	return 0;
 }
 
 bool CCollision::IsTileSolid(int x, int y)
